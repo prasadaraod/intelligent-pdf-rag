@@ -1,0 +1,234 @@
+<div class="app-container">
+  <!-- Sidebar Panel: Connection Status, Upload Zone, & Indexed Files -->
+  <aside class="sidebar glass-panel">
+    <div class="sidebar-header">
+      <h1 class="text-gradient">Intelligent RAG</h1>
+      <p class="subtitle">Local PDF Search Assistant</p>
+    </div>
+
+    <!-- API / Backend Connection Health Status -->
+    <div class="status-indicator-card glass-panel">
+      <div class="status-header">
+        <span class="status-label">Backend Status</span>
+        @if (backendChecking()) {
+          <span class="badge yellow">Checking...</span>
+        } @else if (backendConnected()) {
+          <span class="badge green">Connected</span>
+        } @else {
+          <span class="badge red">Offline</span>
+        }
+      </div>
+      <div class="status-description">
+        @if (backendConnected()) {
+          <div class="status-dot-pulse green"></div>
+          <span class="status-text">Server running on port 5000</span>
+        } @else {
+          <div class="status-dot red"></div>
+          <span class="status-text">Could not reach Express server</span>
+        }
+      </div>
+    </div>
+
+    <!-- Drag & Drop Upload Zone -->
+    <div class="upload-section" *ngIf="isAdminLoggedIn">
+      <div class="section-title">Upload Documents</div>
+      <div 
+        class="dropzone glass-panel"
+        [class.dragover]="isDragOver"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onFileDropped($event)"
+        (click)="fileInput.click()"
+      >
+        <input 
+          #fileInput 
+          type="file" 
+          accept="application/pdf" 
+          (change)="onFileSelected($event)" 
+          style="display: none;" 
+        />
+        
+        <div class="dropzone-content">
+          <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <div class="dropzone-text">Drag & drop your PDF here</div>
+          <div class="dropzone-subtext">or click to browse from system</div>
+          <div class="file-limits">PDF format only (Max 15MB)</div>
+        </div>
+      </div>
+
+      <!-- Upload Status Alerts -->
+      @if (uploading()) {
+        <div class="alert info animate-fade-in">
+          <div class="spinner"></div>
+          <span>Processing and indexing document...</span>
+        </div>
+      }
+      @if (uploadError()) {
+        <div class="alert danger animate-fade-in">
+          <svg class="alert-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>{{ uploadError() }}</span>
+        </div>
+      }
+      @if (uploadSuccess()) {
+        <div class="alert success animate-fade-in">
+          <svg class="alert-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span>{{ uploadSuccess() }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- Ledger of active documents -->
+    <div class="document-ledger">
+      <div class="section-title">Indexed Database</div>
+      <div class="ledger-list">
+        @if (uploadedFiles().length === 0) {
+          <div class="ledger-empty">No documents uploaded yet</div>
+        } @else {
+          @for (file of uploadedFiles(); track file) {
+            <div class="ledger-item glass-panel animate-fade-in">
+              <svg class="doc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              <span class="doc-name" [title]="file">{{ file }}</span>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Chat Dashboard Panel -->
+  <main class="chat-dashboard">
+    <!-- Chat Header -->
+    <header class="chat-header glass-panel">
+      <div class="header-info">
+        <div class="model-badge">
+          <span class="badge-dot"></span>
+          <span class="badge-text">Model: Gemini 2.5 Flash</span>
+        </div>
+        <div class="db-badge">
+          <span class="badge-text">DB: ChromaDB (Local)</span>
+        </div>
+      </div>
+      @if (chatHistory().length > 0) {
+        <button class="clear-btn" (click)="clearChat()">
+          <svg class="clear-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          Clear Chat
+        </button>
+      }
+    </header>
+
+    <!-- Chat Messages Scrolling Area -->
+    <div class="chat-messages-area">
+      @if (chatHistory().length === 0) {
+        <!-- Welcome Screen when chat is empty -->
+        <div class="welcome-screen animate-fade-in">
+          <h2 class="text-gradient">Intelligent Document Assistant</h2>
+          <p class="welcome-desc">Upload a PDF document to parse, chunk, and embed its content into local vector storage. Once indexed, type your query below to get context-aware answers generated using Gemini LLM.</p>
+          
+          <div class="steps-grid">
+            <div class="step-card glass-panel">
+              <div class="step-num">1</div>
+              <div class="step-title">Upload PDF</div>
+              <div class="step-text">Provide any document. It is parsed and chunked locally.</div>
+            </div>
+            <div class="step-card glass-panel">
+              <div class="step-num">2</div>
+              <div class="step-title">Embed & Store</div>
+              <div class="step-text">Gemini generates vectors and stores them in ChromaDB.</div>
+            </div>
+            <div class="step-card glass-panel">
+              <div class="step-num">3</div>
+              <div class="step-title">Ask & Retrieve</div>
+              <div class="step-text">Type questions; we fetch sources and Gemini answers.</div>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <!-- Rendered Chat Bubbles -->
+        <div class="messages-container">
+          @for (message of chatHistory(); track $index) {
+            <div class="message-row" [class.user]="message.sender === 'user'">
+              <div class="message-bubble" [class.glass-panel]="message.sender === 'ai'">
+                <div class="message-sender-header">
+                  <span>{{ message.sender === 'user' ? 'You' : 'Assistant' }}</span>
+                  <span class="message-time">{{ message.timestamp | date:'shortTime' }}</span>
+                </div>
+                
+                <div class="message-body">{{ message.text }}</div>
+
+                <!-- Display retrieved source snippets for AI messages -->
+                @if (message.sender === 'ai' && message.sources && message.sources.length > 0) {
+                  <div class="sources-container">
+                    <div class="sources-title">
+                      <svg class="source-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                      Retrieved Context Sources ({{ message.sources.length }})
+                    </div>
+                    <div class="sources-list">
+                      @for (src of message.sources; track $index) {
+                        <details class="source-item glass-panel">
+                          <summary class="source-summary">
+                            <span class="source-doc-title">{{ src.metadata.source || 'Document' }}</span>
+                            <span class="source-chunk-idx">Snippet #{{ src.metadata.chunkIndex + 1 }}</span>
+                          </summary>
+                          <div class="source-text">{{ src.text }}</div>
+                        </details>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Thinking / Loading animation bubble -->
+          @if (queryLoading()) {
+            <div class="message-row">
+              <div class="message-bubble glass-panel loading-bubble">
+                <div class="message-sender-header">
+                  <span>Assistant</span>
+                </div>
+                <div class="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Chat Query Entry/Input Bar -->
+    <footer class="chat-input-bar glass-panel">
+      <textarea 
+        class="query-textarea"
+        [(ngModel)]="queryInput"
+        placeholder="Ask a question about the uploaded document..."
+        (keydown.enter)="$event.preventDefault(); sendQuery()"
+        [disabled]="queryLoading() || !backendConnected()"
+      ></textarea>
+      
+      <button 
+        class="send-btn" 
+        (click)="sendQuery()" 
+        [disabled]="!queryInput.trim() || queryLoading() || !backendConnected()"
+        [class.active]="queryInput.trim() && !queryLoading() && backendConnected()"
+      >
+        <svg class="send-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13" />
+          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+        </svg>
+      </button>
+    </footer>
+  </main>
+</div>
