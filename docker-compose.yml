@@ -8,10 +8,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Map your local directory to the strict internal default root target path
+      # Maps your local host folder to the internal data folder
       - ./chroma_data:/data
     environment:
       - IS_PERSISTENT=TRUE
       # Point the database engine compiler target to read from /data
       - PERSIST_DIRECTORY=/data
+      - ANONYMOUS_TELEMETRY=FALSE
+    # Ensures the container runs with root permissions internally to fluidly write to your local ./chroma_data folder
+    user: "root"
     restart: always
