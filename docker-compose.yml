@@ -1,0 +1,17 @@
+
+
+services:
+  chromadb:
+    image: chromadb/chroma:latest
+    # 1. Enforces the same container name every single time it boots
+    container_name: intelligent-pdf-rag-chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      # Map your local directory to the strict internal default root target path
+      - ./chroma_data:/data
+    environment:
+      - IS_PERSISTENT=TRUE
+      # Point the database engine compiler target to read from /data
+      - PERSIST_DIRECTORY=/data
+    restart: always
