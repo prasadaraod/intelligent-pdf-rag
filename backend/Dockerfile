@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 5000
 
 # Fire up the application
-CMD ["node", "app.js"]
+CMD ["node", "server.js"]
