@@ -1,5 +1,5 @@
 # Use a stable, lightweight Node.js runtime environment
-FROM node:20-alpine
+FROM node:24-alpine
 
 # Set the active working directory inside the container
 WORKDIR /usr/src/app
