@@ -18,6 +18,8 @@ services:
     # Ensures the container runs with root permissions internally to fluidly write to your local ./chroma_data folder
     user: "root"
     restart: always
+    networks:
+      - rag-internal
 
   backend:
     build:
@@ -40,3 +42,9 @@ services:
     depends_on:
       - chromadb
     restart: always
+    networks:
+      - rag-internal
+
+networks:
+  rag-internal:
+    driver: bridge

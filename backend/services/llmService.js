@@ -12,7 +12,7 @@ if (!apiKey) {
 // FIX: Switched from the deprecated gemini-1.5-flash to gemini-3.5-flash
 const chatModel = new ChatGoogleGenerativeAI({
   apiKey: apiKey,
-  model: 'gemini-3.5-flash',//'gemini-3.5-flash',
+  model: 'gemini-2.5-flash',//'gemini-3.5-flash',
   maxOutputTokens: 2048,
   temperature: 0.2, // Low temperature forces model to stay highly focused on the provided context
 });
