@@ -1,2 +1,3 @@
 chroma_data/
 docker-compose-new.yml
+.env
