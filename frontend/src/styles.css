@@ -38,7 +38,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;      /* Prevents horizontal breakage */
+  overflow-y: auto;        /* Restores mobile scrolling capability */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

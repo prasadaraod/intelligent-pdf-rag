@@ -1,22 +1,20 @@
 .app-container {
   display: flex;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  width: 100%;             
+  min-height: 100vh;       
+  overflow-x: hidden;      
   padding: 16px;
   gap: 16px;
 }
 
-/* ==========================================================================
-   Sidebar Panel Styling
-   ========================================================================== */
 .sidebar {
   flex: 0 0 340px;
+  width: 340px;            
   display: flex;
   flex-direction: column;
   padding: 24px;
   gap: 24px;
-  height: 100%;
+  box-sizing: border-box;  
 }
 
 .sidebar-header {
@@ -304,7 +302,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 500px;
 }
 
 .chat-header {
@@ -646,6 +644,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .send-btn.active {
@@ -665,5 +664,53 @@
 .send-icon {
   width: 16px;
   height: 16px;
-  margin-left: -2px; /* Visual centering adjustment for skew icon */
+  margin-left: -2px; 
+}
+
+/* ==========================================================================
+   Mobile Responsive Breakpoint (Screens under 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column !important; 
+    height: auto !important;
+    padding: 8px;
+    gap: 12px;
+  }
+
+  .sidebar {
+    flex: none !important;             
+    width: 100% !important;            
+    height: auto !important;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .chat-dashboard {
+    width: 100% !important;
+    min-height: 450px;
+    height: calc(100vh - 100px) !important; 
+  }
+
+  .steps-grid {
+    grid-template-columns: 1fr !important; 
+    gap: 8px;
+  }
+
+  .message-bubble {
+    max-width: 92% !important;
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  
+  .chat-header {
+    padding: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .header-info {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
 }
